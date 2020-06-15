@@ -55,6 +55,7 @@ public class PiPViewCoordinator {
     private(set) var isInPiP: Bool = false // true if view is in PiP mode
 
     private(set) var view: UIView
+    private(set) var pipSize = CGSize(width: 150, height: 150)
     private var currentBounds: CGRect = CGRect.zero
 
     private var tapGestureRecognizer: UITapGestureRecognizer?
@@ -66,6 +67,10 @@ public class PiPViewCoordinator {
         self.view = view
     }
 
+    public convenience init(withView view: UIView, pipSize: CGSize) {
+        self.init(withView: view)
+        self.pipSize = pipSize
+    }
     /// Configure the view to be always on top of all the contents
     /// of the provided parent view.
     /// If a parentView is not provided it will try to use the main window
@@ -203,10 +208,8 @@ public class PiPViewCoordinator {
 
         // resize to suggested ratio and position to the bottom right
         let adjustedBounds = bounds.inset(by: dragBoundInsets)
-        let size = CGSize(width: 150, height: 150)
-        let origin = initialPositionFor(pipSize: size, bounds: adjustedBounds)
-        return CGRect(x: origin.x, y: origin.y, width: size.width, height: size.height)
-    }
+        let origin = initialPositionFor(pipSize: pipSize, bounds: adjustedBounds)
+        return CGRect(x: origin.x, y: origin.y, width: pipSize.width, height: pipSize.height)    }
     
     private func initialPositionFor(pipSize size: CGSize, bounds: CGRect) -> CGPoint {
         switch initialPositionInSuperview {
