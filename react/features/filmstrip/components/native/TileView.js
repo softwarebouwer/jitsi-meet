@@ -147,8 +147,12 @@ class TileView extends Component<Props> {
             // In wide view, a four person call should display as a 2x2 grid.
             return 2;
         }
+        if (participantCount === 5 || participantCount === 6) {
+            // In wide view, a four person call should display as a 3xx grid.
+            return 3;
+        }
 
-        return Math.min(3, participantCount);
+        return Math.min(4, participantCount);
     }
 
     /**
