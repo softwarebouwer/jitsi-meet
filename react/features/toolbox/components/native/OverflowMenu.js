@@ -129,6 +129,18 @@ class OverflowMenu extends PureComponent<Props, State> {
                 <AudioRouteButton { ...buttonProps } />
                 <InviteButton { ...buttonProps } />
                 <AudioOnlyButton { ...buttonProps } />
+                <ToggleCameraButton { ...buttonProps } />
+            </BottomSheet>
+        );
+        /*
+        return (
+            <BottomSheet
+                onCancel = { this._onCancel }
+                onSwipe = { this._onSwipe }
+                renderHeader = { this._renderMenuExpandToggle }>
+                <AudioRouteButton { ...buttonProps } />
+                <InviteButton { ...buttonProps } />
+                <AudioOnlyButton { ...buttonProps } />
                 <RaiseHandButton { ...buttonProps } />
                 <LobbyModeButton { ...buttonProps } />
                 <MoreOptionsButton { ...moreOptionsButtonProps } />
@@ -145,6 +157,7 @@ class OverflowMenu extends PureComponent<Props, State> {
                 </Collapsible>
             </BottomSheet>
         );
+    */
     }
 
     _renderMenuExpandToggle: () => React$Element<any>;

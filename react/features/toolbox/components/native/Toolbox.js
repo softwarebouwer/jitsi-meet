@@ -12,6 +12,8 @@ import { isToolboxVisible } from '../../functions';
 import AudioMuteButton from '../AudioMuteButton';
 import HangupButton from '../HangupButton';
 import VideoMuteButton from '../VideoMuteButton';
+import { TileViewButton } from '../../../video-layout';
+import RaiseHandButton from './RaiseHandButton';
 
 import OverflowMenuButton from './OverflowMenuButton';
 import styles from './styles';
@@ -104,9 +106,13 @@ class Toolbox extends PureComponent<Props> {
                 accessibilityRole = 'toolbar'
                 pointerEvents = 'box-none'
                 style = { styles.toolbar }>
+                <RaiseHandButton
+                    styles = { buttonStylesBorderless  }
+                    toggledStyles = { buttonStyles } />
                 <ChatButton
                     styles = { buttonStylesBorderless }
                     toggledStyles = { this._getChatButtonToggledStyle(toggledButtonStyles) } />
+                <View style={{flex:1.0}}/>
                 <AudioMuteButton
                     styles = { buttonStyles }
                     toggledStyles = { toggledButtonStyles } />
@@ -115,6 +121,10 @@ class Toolbox extends PureComponent<Props> {
                 <VideoMuteButton
                     styles = { buttonStyles }
                     toggledStyles = { toggledButtonStyles } />
+                <View style={{flex:1.0}}/>
+                <TileViewButton
+                    styles = { buttonStylesBorderless  }
+                    toggledStyles = { buttonStyles } />
                 <OverflowMenuButton
                     styles = { buttonStylesBorderless }
                     toggledStyles = { toggledButtonStyles } />
