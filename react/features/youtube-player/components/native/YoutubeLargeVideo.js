@@ -46,6 +46,13 @@ type Props = {
     _isPlaying: string,
 
     /**
+     * Set to true when the status is set to stop and the view should not react to further changes.
+     *
+     * @private
+     */
+    _isStopped: boolean,
+
+    /**
      * True if in landscape mode.
      *
      * @private
@@ -131,10 +138,11 @@ const YoutubeLargeVideo = (props: Props) => {
             const {
                 _isOwner,
                 _isPlaying,
+                _isStopped,
                 _seek
             } = props;
 
-            if (shouldSetNewStatus(_isOwner, e, _isPlaying, time, _seek)) {
+            if (shouldSetNewStatus(_isStopped, _isOwner, e, _isPlaying, time, _seek)) {
                 props._onVideoChangeEvent(props.youtubeId, e, time, props._ownerId);
             }
         });
@@ -193,6 +201,7 @@ const YoutubeLargeVideo = (props: Props) => {
  * Return true if the user is the owner and
  * the status has changed or the seek time difference from the previous set is larger than 5 seconds.
  *
+ * @param {boolean} isStopped - Once the status was set to stop, all the other statuses should be ignored.
  * @param {boolean} isOwner - Whether the local user is sharing the video.
  * @param {string} status - The new status.
  * @param {boolean} isPlaying - Whether the component is playing at the moment.
@@ -201,7 +210,11 @@ const YoutubeLargeVideo = (props: Props) => {
  * @private
  * @returns {boolean}
 */
-function shouldSetNewStatus(isOwner, status, isPlaying, newTime, previousTime) {
+function shouldSetNewStatus(isStopped, isOwner, status, isPlaying, newTime, previousTime) {
+    if (isStopped) {
+        return false;
+    }
+
     if (!isOwner || status === 'buffering') {
         return false;
     }
@@ -243,6 +256,7 @@ function _mapStateToProps(state) {
         _enableControls: ownerId === localParticipant.id,
         _isOwner: ownerId === localParticipant.id,
         _isPlaying: status === 'playing',
+        _isStopped: status === 'stop',
         _isWideScreen: responsiveUi.aspectRatio === ASPECT_RATIO_WIDE,
         _ownerId: ownerId,
         _screenHeight: screenHeight,

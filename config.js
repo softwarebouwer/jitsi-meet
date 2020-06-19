@@ -260,11 +260,14 @@ var config = {
     // is set in Jicofo and set to 2).
     // minParticipants: 2,
 
-    // Use XEP-0215 to fetch STUN and TURN servers.
+    // Use the TURN servers discovered via XEP-0215 for the jitsi-videobridge
+    // connection
     // useStunTurn: true,
 
-    // Enable IPv6 support.
-    // useIPv6: true,
+    // Use TURN/UDP servers for the jitsi-videobridge connection (by default
+    // we filter out TURN/UDP because it is usually not needed since the
+    // bridge itself is reachable via UDP)
+    // useTurnUdp: false
 
     // Enables / disables a data communication channel with the Videobridge.
     // Values can be 'datachannel', 'websocket', true (treat it as
@@ -275,9 +278,6 @@ var config = {
 
     // UI
     //
-
-    // Use display name as XMPP nickname.
-    // useNicks: false,
 
     // Require users to always specify a display name.
     // requireDisplayName: true,
@@ -321,6 +321,11 @@ var config = {
 
     // When 'true', it shows an intermediate page before joining, where the user can  configure its devices.
     // prejoinPageEnabled: false,
+
+    // If true, shows the unsafe roon name warning label when a room name is
+    // deemed unsafe (due to the simplicity in the name) and a password is not
+    // set or the lobby is not enabled.
+    // enableInsecureRoomNameWarning: false,
 
     // Stats
     //
