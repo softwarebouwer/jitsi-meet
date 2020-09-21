@@ -5,7 +5,6 @@ import { processExternalDeviceRequest } from '../../device-selection';
 import { showNotification, showWarningNotification } from '../../notifications';
 import { replaceAudioTrackById, replaceVideoTrackById, setDeviceStatusWarning } from '../../prejoin/actions';
 import { isPrejoinPageVisible } from '../../prejoin/functions';
-import { CONFERENCE_JOINED } from '../conference';
 import { JitsiTrackErrors } from '../lib-jitsi-meet';
 import { MiddlewareRegistry } from '../redux';
 import { updateSettings } from '../settings';
@@ -15,14 +14,20 @@ import {
     NOTIFY_CAMERA_ERROR,
     NOTIFY_MIC_ERROR,
     SET_AUDIO_INPUT_DEVICE,
-    SET_VIDEO_INPUT_DEVICE
+    SET_VIDEO_INPUT_DEVICE,
+    UPDATE_DEVICE_LIST
 } from './actionTypes';
 import {
     removePendingDeviceRequests,
     setAudioInputDevice,
     setVideoInputDevice
 } from './actions';
-import { formatDeviceLabel, setAudioOutputDeviceId } from './functions';
+import {
+    areDeviceLabelsInitialized,
+    formatDeviceLabel,
+    groupDevicesByKind,
+    setAudioOutputDeviceId
+} from './functions';
 import logger from './logger';
 
 const JITSI_TRACK_ERROR_TO_MESSAGE_KEY_MAP = {
@@ -42,6 +47,24 @@ const JITSI_TRACK_ERROR_TO_MESSAGE_KEY_MAP = {
 };
 
 /**
+ * Logs the current device list.
+ *
+ * @param {Object} deviceList - Whatever is returned by {@link groupDevicesByKind}.
+ * @returns {string}
+ */
+function logDeviceList(deviceList) {
+    const devicesToStr = list => list.map(device => `\t\t${device.label}[${device.deviceId}]`).join('\n');
+    const audioInputs = devicesToStr(deviceList.audioInput);
+    const audioOutputs = devicesToStr(deviceList.audioOutput);
+    const videoInputs = devicesToStr(deviceList.videoInput);
+
+    logger.debug('Device list updated:\n'
+        + `audioInput:\n${audioInputs}\n`
+        + `audioOutput:\n${audioOutputs}\n`
+        + `videoInput:\n${videoInputs}`);
+}
+
+/**
  * Implements the middleware of the feature base/devices.
  *
  * @param {Store} store - Redux store.
@@ -50,8 +73,6 @@ const JITSI_TRACK_ERROR_TO_MESSAGE_KEY_MAP = {
 // eslint-disable-next-line no-unused-vars
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
-    case CONFERENCE_JOINED:
-        return _conferenceJoined(store, next, action);
     case NOTIFY_CAMERA_ERROR: {
         if (typeof APP !== 'object' || !action.error) {
             break;
@@ -123,6 +144,12 @@ MiddlewareRegistry.register(store => next => action => {
             APP.UI.emitEvent(UIEvents.VIDEO_DEVICE_CHANGED, action.deviceId);
         }
         break;
+    case UPDATE_DEVICE_LIST:
+        logDeviceList(groupDevicesByKind(action.devices));
+        if (areDeviceLabelsInitialized(store.getState())) {
+            return _processPendingRequests(store, next, action);
+        }
+        break;
     case CHECK_AND_NOTIFY_FOR_NEW_DEVICE:
         _checkAndNotifyForNewDevice(store, action.newDevices, action.oldDevices);
         break;
@@ -144,10 +171,14 @@ MiddlewareRegistry.register(store => next => action => {
  * @private
  * @returns {Object} The value returned by {@code next(action)}.
  */
-function _conferenceJoined({ dispatch, getState }, next, action) {
+function _processPendingRequests({ dispatch, getState }, next, action) {
     const result = next(action);
     const state = getState();
     const { pendingRequests } = state['features/base/devices'];
+
+    if (!pendingRequests || pendingRequests.length === 0) {
+        return result;
+    }
 
     pendingRequests.forEach(request => {
         processExternalDeviceRequest(

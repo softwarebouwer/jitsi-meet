@@ -4,23 +4,24 @@ import React, { Component } from 'react';
 import type { Dispatch } from 'redux';
 
 import { createE2EEEvent, sendAnalytics } from '../../analytics';
-import { translate, translateToHTML } from '../../base/i18n';
+import { translate } from '../../base/i18n';
 import { getParticipants } from '../../base/participants';
+import { Switch } from '../../base/react';
 import { connect } from '../../base/redux';
-import { setE2EEKey } from '../actions';
+import { toggleE2EE } from '../actions';
 
 
 type Props = {
 
     /**
+     * Whether E2EE is currently enabled or not.
+     */
+    _enabled: boolean,
+
+    /**
      * Indicates whether all participants in the conference currently support E2EE.
      */
     _everyoneSupportsE2EE: boolean,
-
-    /**
-     * The current E2EE key.
-     */
-    _key: string,
 
     /**
      * The redux {@code dispatch} function.
@@ -36,14 +37,14 @@ type Props = {
 type State = {
 
     /**
-     * True if the key is being edited.
+     * True if the switch is toggled on.
      */
-    editing: boolean,
+    enabled: boolean,
 
     /**
-     * The current E2EE key.
+     * True if the section description should be expanded, false otherwise.
      */
-    key: string
+    expand: boolean
 };
 
 /**
@@ -53,28 +54,38 @@ type State = {
  * @extends Component
  */
 class E2EESection extends Component<Props, State> {
-    fieldRef: Object;
+    /**
+     * Implements React's {@link Component#getDerivedStateFromProps()}.
+     *
+     * @inheritdoc
+     */
+    static getDerivedStateFromProps(props: Props, state: Object) {
+        if (props._enabled !== state.enabled) {
+
+            return {
+                enabled: props._enabled
+            };
+        }
+
+        return null;
+    }
 
     /**
-     * Initializes a new {@code E2EEDialog  } instance.
+     * Instantiates a new component.
      *
-     * @param {Object} props - The read-only properties with which the new
-     * instance is to be initialized.
+     * @inheritdoc
      */
     constructor(props: Props) {
         super(props);
 
-        this.fieldRef = React.createRef();
-
         this.state = {
-            editing: false,
-            key: this.props._key
+            enabled: false,
+            expand: false
         };
 
         // Bind event handlers so they are only bound once for every instance.
-        this._onKeyChange = this._onKeyChange.bind(this);
-        this._onSet = this._onSet.bind(this);
-        this._onToggleSetKey = this._onToggleSetKey.bind(this);
+        this._onExpand = this._onExpand.bind(this);
+        this._onToggle = this._onToggle.bind(this);
     }
 
     /**
@@ -85,15 +96,19 @@ class E2EESection extends Component<Props, State> {
      */
     render() {
         const { _everyoneSupportsE2EE, t } = this.props;
-        const { editing } = this.state;
+        const { enabled, expand } = this.state;
+        const description = t('dialog.e2eeDescription');
 
         return (
             <div id = 'e2ee-section'>
-                <p className = 'title'>
-                    { t('dialog.e2eeTitle') }
-                </p>
                 <p className = 'description'>
-                    { translateToHTML(t, 'dialog.e2eeDescription') }
+                    { expand && description }
+                    { !expand && description.substring(0, 100) }
+                    { !expand && <span
+                        className = 'read-more'
+                        onClick = { this._onExpand }>
+                            ... { t('dialog.readMore') }
+                    </span> }
                 </p>
                 {
                     !_everyoneSupportsE2EE
@@ -101,74 +116,48 @@ class E2EESection extends Component<Props, State> {
                             { t('dialog.e2eeWarning') }
                         </span>
                 }
-                <div className = 'key-field'>
+                <div className = 'control-row'>
                     <label>
-                        { t('dialog.e2eeLabel') }:
+                        { t('dialog.e2eeLabel') }
                     </label>
-                    <input
-                        disabled = { !editing }
-                        name = 'e2eeKey'
-                        onChange = { this._onKeyChange }
-                        placeholder = { t('dialog.e2eeNoKey') }
-                        ref = { this.fieldRef }
-                        type = 'password'
-                        value = { this.state.key } />
-                    { editing && <a onClick = { this._onSet }>
-                        { t('dialog.e2eeSet') }
-                    </a> }
-                    { !editing && <a onClick = { this._onToggleSetKey }>
-                        { t('dialog.e2eeToggleSet') }
-                    </a> }
+                    <Switch
+                        onValueChange = { this._onToggle }
+                        value = { enabled } />
                 </div>
             </div>
         );
     }
 
-    _onKeyChange: (Object) => void;
+    _onExpand: () => void;
 
     /**
-     * Updates the entered key.
+     * Callback to be invoked when the description is expanded.
      *
-     * @param {Object} event - The DOM event triggered from the entered value having changed.
-     * @private
      * @returns {void}
      */
-    _onKeyChange(event) {
-        this.setState({ key: event.target.value.trim() });
-    }
-
-    _onSet: () => void;
-
-    /**
-     * Dispatches an action to set/unset the E2EE key.
-     *
-     * @private
-     * @returns {void}
-     */
-    _onSet() {
-        const { key } = this.state;
-
-        sendAnalytics(createE2EEEvent(`key.${key ? 'set' : 'unset'}`));
-        this.props.dispatch(setE2EEKey(key));
-
+    _onExpand() {
         this.setState({
-            editing: false
+            expand: true
         });
     }
 
-    _onToggleSetKey: () => void;
+    _onToggle: () => void;
 
     /**
-     * Sets the section into edit mode so then the user can set the key.
+     * Callback to be invoked when the user toggles E2EE on or off.
      *
+     * @private
      * @returns {void}
      */
-    _onToggleSetKey() {
+    _onToggle() {
+        const newValue = !this.state.enabled;
+
         this.setState({
-            editing: true
-        }, () => {
-            this.fieldRef.current.focus();
+            enabled: newValue
         });
+
+        sendAnalytics(createE2EEEvent(`enabled.${String(newValue)}`));
+        this.props.dispatch(toggleE2EE(newValue));
     }
 }
 
@@ -180,12 +169,12 @@ class E2EESection extends Component<Props, State> {
  * @returns {Props}
  */
 function mapStateToProps(state) {
-    const { e2eeKey } = state['features/e2ee'];
+    const { enabled } = state['features/e2ee'];
     const participants = getParticipants(state).filter(p => !p.local);
 
     return {
-        _everyoneSupportsE2EE: participants.every(p => Boolean(p.e2eeSupported)),
-        _key: e2eeKey || ''
+        _enabled: enabled,
+        _everyoneSupportsE2EE: participants.every(p => Boolean(p.e2eeSupported))
     };
 }
 

@@ -36,14 +36,18 @@
     }
 
     &-checkbox-container {
-        align-items: center;
-        color: #fff;
-        display: none;
-        font-size: 13px;
-        justify-content: center;
-        line-height: 20px;
-        margin-top: 16px;
+        margin-bottom: 14px;
         width: 100%;
+    }
+
+    &-error {
+        color: white;
+        background-color: rgba(229, 75, 75, 0.5);
+        width: 100%;
+        padding: 3px;
+        margin-top: 4px;
+        font-size: 13px;
+        text-align: center;
     }
 }
 

@@ -27,6 +27,11 @@ type Props = {
     hasOptions?: boolean,
 
     /**
+     * TestId of the button. Can be used to locate element when testing UI.
+     */
+    testId?: string,
+
+    /**
      * The type of th button: primary, secondary, text.
      */
     type: string,
@@ -52,6 +57,7 @@ function ActionButton({
     className = '',
     disabled,
     hasOptions,
+    testId,
     type = 'primary',
     onClick,
     onOptionsClick
@@ -59,10 +65,12 @@ function ActionButton({
     return (
         <div
             className = { `action-btn ${className} ${type} ${disabled ? 'disabled' : ''}` }
+            data-testid = { testId ? testId : undefined }
             onClick = { disabled ? undefined : onClick }>
             {children}
             {hasOptions && <div
                 className = 'options'
+                data-testid = 'prejoin.joinOptions'
                 onClick = { disabled ? undefined : onOptionsClick }>
                 <Icon
                     className = 'icon'

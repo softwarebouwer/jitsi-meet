@@ -2,7 +2,6 @@
 
 import React, { PureComponent } from 'react';
 
-import { IconShareDesktop } from '../../icons';
 import { getParticipantById } from '../../participants';
 import { connect } from '../../redux';
 import { getAvatarColor, getInitials } from '../functions';
@@ -57,6 +56,11 @@ export type Props = {
      * One of the expected status strings (e.g. 'available') to render a badge on the avatar, if necessary.
      */
     status?: ?string,
+
+    /**
+     * TestId of the element, if any.
+     */
+    testId?: string,
 
     /**
      * URL of the avatar, if any.
@@ -122,6 +126,7 @@ class Avatar<P: Props> extends PureComponent<P, State> {
             id,
             size,
             status,
+            testId,
             url
         } = this.props;
         const { avatarFailed } = this.state;
@@ -134,6 +139,7 @@ class Avatar<P: Props> extends PureComponent<P, State> {
             onAvatarLoadError: undefined,
             size,
             status,
+            testId,
             url: undefined
         };
 
@@ -185,17 +191,10 @@ export function _mapStateToProps(state: Object, ownProps: Props) {
     const { colorBase, displayName, participantId } = ownProps;
     const _participant: ?Object = participantId && getParticipantById(state, participantId);
     const _initialsBase = _participant?.name ?? displayName;
-    const screenShares = state['features/video-layout'].screenShares || [];
-
-    let _loadableAvatarUrl = _participant?.loadableAvatarUrl;
-
-    if (participantId && screenShares.includes(participantId)) {
-        _loadableAvatarUrl = IconShareDesktop;
-    }
 
     return {
         _initialsBase,
-        _loadableAvatarUrl,
+        _loadableAvatarUrl: _participant?.loadableAvatarUrl,
         colorBase: !colorBase && _participant ? _participant.id : colorBase
     };
 }

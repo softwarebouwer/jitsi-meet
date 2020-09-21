@@ -55,7 +55,7 @@ const config = {
             // as well.
 
             exclude: [
-                new RegExp(`${__dirname}/node_modules/(?!js-utils)`)
+                new RegExp(`${__dirname}/node_modules/(?!@jitsi/js-utils)`)
             ],
             loader: 'babel-loader',
             options: {
@@ -140,7 +140,10 @@ const config = {
         // Allow the use of the real filename of the module being executed. By
         // default Webpack does not leak path-related information and provides a
         // value that is a mock (/index.js).
-        __filename: true
+        __filename: true,
+
+        // Provide an empty 'fs' module.
+        fs: 'empty'
     },
     optimization: {
         concatenateModules: minimize,
@@ -187,7 +190,7 @@ module.exports = [
         entry: {
             'app.bundle': './app.js'
         },
-        performance: getPerformanceHints(4 * 1024 * 1024)
+        performance: getPerformanceHints(4.5 * 1024 * 1024)
     }),
     Object.assign({}, config, {
         entry: {
@@ -224,6 +227,12 @@ module.exports = [
             'analytics-ga': './react/features/analytics/handlers/GoogleAnalyticsHandler.js'
         },
         performance: getPerformanceHints(5 * 1024)
+    }),
+    Object.assign({}, config, {
+        entry: {
+            'close3': './static/close3.js'
+        },
+        performance: getPerformanceHints(128 * 1024)
     }),
 
     // Because both video-blur-effect and rnnoise-processor modules are loaded

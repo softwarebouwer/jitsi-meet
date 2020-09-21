@@ -21,12 +21,13 @@ import { getTrackByMediaTypeAndParticipant } from '../../../base/tracks';
 import { ConnectionIndicator } from '../../../connection-indicator';
 import { DisplayNameLabel } from '../../../display-name';
 import { RemoteVideoMenu } from '../../../remote-video-menu';
-import { toggleToolboxVisible } from '../../../toolbox';
+import { toggleToolboxVisible } from '../../../toolbox/actions.native';
 
 import AudioMutedIndicator from './AudioMutedIndicator';
 import DominantSpeakerIndicator from './DominantSpeakerIndicator';
 import ModeratorIndicator from './ModeratorIndicator';
 import RaisedHandIndicator from './RaisedHandIndicator';
+import ScreenShareIndicator from './ScreenShareIndicator';
 import VideoMutedIndicator from './VideoMutedIndicator';
 import styles, { AVATAR_SIZE } from './styles';
 
@@ -149,7 +150,7 @@ function Thumbnail(props: Props) {
             touchFeedback = { false }>
 
             <ParticipantView
-                avatarSize = { AVATAR_SIZE }
+                avatarSize = { tileView ? AVATAR_SIZE * 1.5 : AVATAR_SIZE }
                 disableVideo = { isScreenShare || participant.isFakeParticipant }
                 participantId = { participantId }
                 style = { _styles.participantViewStyle }
@@ -157,7 +158,9 @@ function Thumbnail(props: Props) {
                 tintStyle = { _styles.activeThumbnailTint }
                 zOrder = { 1 } />
 
-            { renderDisplayName && <DisplayNameLabel participantId = { participantId } /> }
+            { renderDisplayName && <Container style = { styles.displayNameContainer }>
+                <DisplayNameLabel participantId = { participantId } />
+            </Container> }
 
             { renderModeratorIndicator
                 && <View style = { styles.moderatorIndicatorContainer }>
@@ -184,9 +187,10 @@ function Thumbnail(props: Props) {
             { !participant.isFakeParticipant && <Container style = { styles.thumbnailIndicatorContainer }>
                 { audioMuted
                     && <AudioMutedIndicator /> }
-
                 { videoMuted
                     && <VideoMutedIndicator /> }
+                { isScreenShare
+                    && <ScreenShareIndicator /> }
             </Container> }
 
         </Container>

@@ -2,10 +2,10 @@
 
 import { createToolbarEvent, sendAnalytics } from '../../../analytics';
 import { translate } from '../../../base/i18n';
-import { IconLockPassword, IconUnlockPassword } from '../../../base/icons';
+import { IconSecurityOff, IconSecurityOn } from '../../../base/icons';
 import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox';
-import { openSecurityDialog } from '../../actions';
+import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
+import { toggleSecurityDialog } from '../../actions';
 
 
 type Props = AbstractButtonProps & {
@@ -28,9 +28,9 @@ type Props = AbstractButtonProps & {
  */
 class SecurityDialogButton extends AbstractButton<Props, *> {
     accessibilityLabel = 'toolbar.accessibilityLabel.security';
-    icon = IconUnlockPassword;
+    icon = IconSecurityOff;
     label = 'toolbar.security';
-    toggledIcon = IconLockPassword;
+    toggledIcon = IconSecurityOn;
     tooltip = 'toolbar.security';
 
     /**
@@ -77,7 +77,7 @@ function mapStateToProps(state: Object) {
  * @returns {Props}
  */
 const mapDispatchToProps = {
-    onClick: () => openSecurityDialog()
+    onClick: () => toggleSecurityDialog()
 };
 
 export default translate(connect(mapStateToProps, mapDispatchToProps)(SecurityDialogButton));

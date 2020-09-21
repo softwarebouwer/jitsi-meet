@@ -2,10 +2,11 @@
 
 import React from 'react';
 
-import { Avatar } from '../../../avatar';
 import { Video } from '../../../media';
 import { connect } from '../../../redux';
 import { getLocalVideoTrack } from '../../../tracks';
+
+import PreviewAvatar from './Avatar';
 
 export type Props = {
 
@@ -13,6 +14,11 @@ export type Props = {
      * The name of the user that is about to join.
      */
     name: string,
+
+    /**
+     * Indicates whether the avatar should be shown when video is off
+     */
+    showAvatar: boolean,
 
     /**
      * Flag signaling the visibility of camera preview.
@@ -32,7 +38,7 @@ export type Props = {
  * @returns {ReactElement}
  */
 function Preview(props: Props) {
-    const { name, videoMuted, videoTrack } = props;
+    const { name, showAvatar, videoMuted, videoTrack } = props;
 
     if (!videoMuted && videoTrack) {
         return (
@@ -44,17 +50,22 @@ function Preview(props: Props) {
         );
     }
 
-    return (
-        <div
-            className = 'no-video'
-            id = 'preview'>
-            <Avatar
-                className = 'preview-avatar'
-                displayName = { name }
-                size = { 200 } />
-        </div>
-    );
+    if (showAvatar) {
+        return (
+            <div
+                className = 'no-video'
+                id = 'preview'>
+                <PreviewAvatar name = { name } />
+            </div>
+        );
+    }
+
+    return null;
 }
+
+Preview.defaultProps = {
+    showAvatar: true
+};
 
 /**
  * Maps part of the Redux state to the props of this component.

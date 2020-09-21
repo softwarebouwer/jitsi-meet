@@ -6,7 +6,7 @@ import { getCurrentConferenceUrl } from '../../../connection';
 import { translate } from '../../../i18n';
 import { Icon, IconCopy, IconCheck } from '../../../icons';
 import { connect } from '../../../redux';
-import logger from '../../logger';
+import { copyText, getDecodedURI } from '../../../util';
 
 type Props = {
 
@@ -18,7 +18,13 @@ type Props = {
     /**
      * Used for translation.
      */
-    t: Function
+    t: Function,
+
+    /**
+     * Used to determine if invitation link should be automatically copied
+     * after creating a meeting.
+     */
+    _enableAutomaticUrlCopy: boolean,
 };
 
 type State = {
@@ -41,8 +47,6 @@ const COPY_TIMEOUT = 2000;
  */
 class CopyMeetingUrl extends Component<Props, State> {
 
-    textarea: Object;
-
     /**
      * Initializes a new {@code Prejoin} instance.
      *
@@ -51,7 +55,6 @@ class CopyMeetingUrl extends Component<Props, State> {
     constructor(props) {
         super(props);
 
-        this.textarea = React.createRef();
         this.state = {
             showCopyLink: false,
             showLinkCopied: false
@@ -61,6 +64,7 @@ class CopyMeetingUrl extends Component<Props, State> {
         this._hideLinkCopied = this._hideLinkCopied.bind(this);
         this._showCopyLink = this._showCopyLink.bind(this);
         this._showLinkCopied = this._showLinkCopied.bind(this);
+        this._copyUrlAutomatically = this._copyUrlAutomatically.bind(this);
     }
 
     _copyUrl: () => void;
@@ -71,16 +75,11 @@ class CopyMeetingUrl extends Component<Props, State> {
      * @returns {void}
      */
     _copyUrl() {
-        const textarea = this.textarea.current;
+        const success = copyText(this.props.url);
 
-        try {
-            textarea.select();
-            document.execCommand('copy');
-            textarea.blur();
+        if (success) {
             this._showLinkCopied();
             window.setTimeout(this._hideLinkCopied, COPY_TIMEOUT);
-        } catch (err) {
-            logger.error('error when copying the meeting url');
         }
     }
 
@@ -143,6 +142,37 @@ class CopyMeetingUrl extends Component<Props, State> {
         });
     }
 
+    _copyUrlAutomatically: () => void;
+
+    /**
+     * Attempts to automatically copy invitation URL.
+     * Document has to be focused in order for this to work.
+     *
+     * @private
+     * @returns {void}
+     */
+    _copyUrlAutomatically() {
+        navigator.clipboard.writeText(this.props.url)
+            .then(() => {
+                this._showLinkCopied();
+                window.setTimeout(this._hideLinkCopied, COPY_TIMEOUT);
+            });
+    }
+
+    /**
+     * Implements React's {@link Component#componentDidMount()}. Invoked
+     * immediately before mounting occurs.
+     *
+     * @inheritdoc
+     */
+    componentDidMount() {
+        const { _enableAutomaticUrlCopy } = this.props;
+
+        if (_enableAutomaticUrlCopy) {
+            setTimeout(this._copyUrlAutomatically, 2000);
+        }
+    }
+
     /**
      * Implements React's {@link Component#render()}.
      *
@@ -164,7 +194,7 @@ class CopyMeetingUrl extends Component<Props, State> {
                     className = { `url ${showLinkCopied ? 'done' : ''}` }
                     onClick = { _copyUrl } >
                     <div className = 'copy-meeting-text'>
-                        { !showCopyLink && !showLinkCopied && url }
+                        { !showCopyLink && !showLinkCopied && getDecodedURI(url) }
                         { showCopyLink && t('prejoin.copyAndShare') }
                         { showLinkCopied && t('prejoin.linkCopied') }
                     </div>
@@ -173,11 +203,6 @@ class CopyMeetingUrl extends Component<Props, State> {
                         size = { 24 }
                         src = { src } />
                 </div>
-                <textarea
-                    readOnly = { true }
-                    ref = { this.textarea }
-                    tabIndex = '-1'
-                    value = { url } />
             </div>
         );
     }
@@ -190,8 +215,11 @@ class CopyMeetingUrl extends Component<Props, State> {
  * @returns {Object}
  */
 function mapStateToProps(state) {
+    const { enableAutomaticUrlCopy } = state['features/base/config'];
+
     return {
-        url: getCurrentConferenceUrl(state)
+        url: getCurrentConferenceUrl(state),
+        _enableAutomaticUrlCopy: enableAutomaticUrlCopy || false
     };
 }
 
