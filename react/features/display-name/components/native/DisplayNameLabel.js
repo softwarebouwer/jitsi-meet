@@ -41,9 +41,10 @@ class DisplayNameLabel extends Component<Props> {
      * @inheritdoc
      */
     render() {
-        if (!this.props._render) {
-            return null;
-        }
+        // always show participant name
+        // if (!this.props._render) {
+        //     return null;
+        // }
 
         return (
             <View style = { styles.displayNameBackdrop }>
