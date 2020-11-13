@@ -170,16 +170,43 @@ class TileView extends Component<Props> {
     _getSortedParticipants() {
         const participants = [];
         let localParticipant;
+        let dominant;
+
+        // only move dominant speakers when screen is full
+        const MAX_TILES = 25;
+        const count = this.props._participants.length + 1;
 
         for (const participant of this.props._participants) {
             if (participant.local) {
                 localParticipant = participant;
+            } else if (participant.dominantSpeaker && count > MAX_TILES) {
+                dominant = participant;
             } else {
                 participants.push(participant);
             }
         }
 
+        const index = this.props._participants.indexOf(dominant);
+
+        // dominant speaker found and not already at the start of the array
+        if (index >= MAX_TILES && dominant) {
+            this.props._participants.splice(index, 1);
+            this.props._participants.unshift(dominant);
+        }
+
         localParticipant && participants.push(localParticipant);
+        if (dominant) {
+            if (index >= MAX_TILES) {
+                // move to front
+                participants.unshift(dominant);
+            } else if (participants.length > index) {
+                // insert it where it was/should have been
+                participants.splice(index, 0, dominant);
+            } else {
+                // should not happen
+                participants.push(dominant);
+            }
+        }
 
         return participants;
     }
