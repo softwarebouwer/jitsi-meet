@@ -12,6 +12,7 @@ import {
     JitsiParticipantConnectionStatus
 } from '../../../react/features/base/lib-jitsi-meet';
 import { VIDEO_TYPE } from '../../../react/features/base/media';
+import { getParticipantById } from '../../../react/features/base/participants';
 import { CHAT_SIZE } from '../../../react/features/chat';
 import {
     updateKnownLargeVideoResolution
@@ -224,9 +225,8 @@ export default class LargeVideoManager {
             const wasUsersImageCached
                 = !isUserSwitch && container.wasVideoRendered;
             const isVideoMuted = !stream || stream.isMuted();
-
-            const connectionStatus
-                = APP.conference.getParticipantConnectionStatus(id);
+            const participant = getParticipantById(APP.store.getState(), id);
+            const connectionStatus = participant?.connectionStatus;
             const isVideoRenderable
                 = !isVideoMuted
                     && (APP.conference.isLocalId(id)
@@ -356,17 +356,12 @@ export default class LargeVideoManager {
         let widthToUse = this.preferredWidth || window.innerWidth;
         const { isOpen } = APP.store.getState()['features/chat'];
 
-        /**
-         * If chat state is open, we re-compute the container width by subtracting the default width of
-         * the chat. We re-compute the width again after the chat window is closed. This is needed when
-         * custom styling is configured on the large video container through the iFrame API.
-         */
-        if (isOpen && !this.resizedForChat) {
+        if (isOpen) {
+            /**
+             * If chat state is open, we re-compute the container width
+             * by subtracting the default width of the chat.
+             */
             widthToUse -= CHAT_SIZE;
-            this.resizedForChat = true;
-        } else if (this.resizedForChat) {
-            this.resizedForChat = false;
-            widthToUse += CHAT_SIZE;
         }
 
         this.width = widthToUse;
@@ -484,8 +479,8 @@ export default class LargeVideoManager {
      */
     showRemoteConnectionMessage(show) {
         if (typeof show !== 'boolean') {
-            const connStatus
-                = APP.conference.getParticipantConnectionStatus(this.id);
+            const participant = getParticipantById(APP.store.getState(), this.id);
+            const connStatus = participant?.connectionStatus;
 
             // eslint-disable-next-line no-param-reassign
             show = !APP.conference.isLocalId(this.id)
