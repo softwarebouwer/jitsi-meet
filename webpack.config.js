@@ -35,6 +35,7 @@ function getPerformanceHints(size) {
 const config = {
     devServer: {
         https: true,
+        host: '0.0.0.0',
         inline: true,
         proxy: {
             '/': {
@@ -115,7 +116,8 @@ const config = {
             test: /\/node_modules\/@atlaskit\/modal-dialog\/.*\.js$/,
             resolve: {
                 alias: {
-                    'react-focus-lock': `${__dirname}/react/features/base/util/react-focus-lock-wrapper.js`
+                    'react-focus-lock': `${__dirname}/react/features/base/util/react-focus-lock-wrapper.js`,
+                    '../styled/Modal': `${__dirname}/react/features/base/dialog/components/web/ThemedDialog.js`
                 }
             }
         }, {
