@@ -16,8 +16,11 @@ WEBPACK_DEV_SERVER = ./node_modules/.bin/webpack-dev-server
 
 all: compile deploy clean
 
-compile:
+compile: compile-load-test
 	$(WEBPACK) -p
+
+compile-load-test:
+	${NPM} install --prefix resources/load-test && ${NPM} run build --prefix resources/load-test
 
 clean:
 	rm -fr $(BUILD_DIR)
