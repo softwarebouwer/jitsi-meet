@@ -75,27 +75,23 @@ function Toolbox(props: Props) {
                 accessibilityRole = 'toolbar'
                 pointerEvents = 'box-none'
                 style = { styles.toolbox }>
+
+                { additionalButtons.has('raisehand')
+                      && <RaiseHandButton
+                          styles = { buttonStylesBorderless }
+                          toggledStyles = { backgroundToggledStyle } />}
+                { additionalButtons.has('chat')
+                      && <ChatButton
+                          styles = { buttonStylesBorderless }
+                          toggledStyles = { backgroundToggledStyle } />}
                 <AudioMuteButton
                     styles = { buttonStylesBorderless }
                     toggledStyles = { toggledButtonStyles } />
                 <VideoMuteButton
                     styles = { buttonStylesBorderless }
                     toggledStyles = { toggledButtonStyles } />
-                { additionalButtons.has('chat')
-                      && <ChatButton
-                          styles = { buttonStylesBorderless }
-                          toggledStyles = { backgroundToggledStyle } />}
-
-                { additionalButtons.has('raisehand')
-                      && <RaiseHandButton
-                          styles = { buttonStylesBorderless }
-                          toggledStyles = { backgroundToggledStyle } />}
                 {additionalButtons.has('tileview') && <TileViewButton styles = { buttonStylesBorderless } />}
                 {additionalButtons.has('invite') && <InviteButton styles = { buttonStylesBorderless } />}
-                {additionalButtons.has('togglecamera')
-                      && <ToggleCameraButton
-                          styles = { buttonStylesBorderless }
-                          toggledStyles = { backgroundToggledStyle } />}
                 <OverflowMenuButton
                     styles = { buttonStylesBorderless }
                     toggledStyles = { toggledButtonStyles } />

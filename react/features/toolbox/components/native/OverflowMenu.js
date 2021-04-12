@@ -167,8 +167,8 @@ class OverflowMenu extends PureComponent<Props, State> {
                     <HelpButton { ...buttonProps } />
                 </Collapsible>
             </BottomSheet>
-        */
         );
+        */
     }
 
     _renderMenuExpandToggle: () => React$Element<any>;
