@@ -53,6 +53,11 @@ type Props = {
      */
     hideCancelButton: boolean,
 
+    /**
+     * If true, no footer will be displayed.
+     */
+    disableFooter?: boolean,
+
     i18n: Object,
 
     /**
@@ -67,7 +72,7 @@ type Props = {
     submitDisabled: boolean,
 
     /**
-     * Function to be used to retreive translated i18n labels.
+     * Function to be used to retrieve translated i18n labels.
      */
     t: Function,
 
@@ -173,6 +178,10 @@ class StatelessDialog extends Component<Props> {
             this._renderOKButton(),
             this._renderCancelButton()
         ].filter(Boolean);
+
+        if (this.props.disableFooter) {
+            return null;
+        }
 
         return (
             <ModalFooter showKeyline = { propsFromModalFooter.showKeyline } >

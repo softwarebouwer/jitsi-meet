@@ -123,7 +123,7 @@ var config = {
     // opusMaxAverageBitrate: 20000,
 
     // Enables support for opus-red (redundancy for Opus).
-    // enableOpusRed: false
+    // enableOpusRed: false,
 
     // Video
 
@@ -239,6 +239,12 @@ var config = {
     //     70: 5,
     //     90: 2
     // },
+
+    // Provides a way to translate the legacy bridge signaling messages, 'LastNChangedEvent',
+    // 'SelectedEndpointsChangedEvent' and 'ReceiverVideoConstraint' into the new 'ReceiverVideoConstraints' message
+    // that invokes the new bandwidth allocation algorithm in the bridge which is described here
+    // - https://github.com/jitsi/jitsi-videobridge/blob/master/doc/allocation.md.
+    // useNewBandwidthAllocationStrategy: false,
 
     // Specify the settings for video quality optimizations on the client.
     // videoQuality: {
@@ -406,7 +412,26 @@ var config = {
     // enableAutomaticUrlCopy: false,
 
     // Base URL for a Gravatar-compatible service. Defaults to libravatar.
-    // gravatarBaseURL: 'https://seccdn.libravatar.org/avatar/';
+    // gravatarBaseURL: 'https://seccdn.libravatar.org/avatar/',
+
+    // Moved from interfaceConfig(TOOLBAR_BUTTONS).
+    // The name of the toolbar buttons to display in the toolbar, including the
+    // "More actions" menu. If present, the button will display. Exceptions are
+    // "livestreaming" and "recording" which also require being a moderator and
+    // some other values in config.js to be enabled. Also, the "profile" button will
+    // not display for users with a JWT.
+    // Notes:
+    // - it's impossible to choose which buttons go in the "More actions" menu
+    // - it's impossible to control the placement of buttons
+    // - 'desktop' controls the "Share your screen" button
+    // - if `toolbarButtons` is undefined, we fallback to enabling all buttons on the UI
+    // toolbarButtons: [
+    //    'microphone', 'camera', 'closedcaptions', 'desktop', 'embedmeeting', 'fullscreen',
+    //    'fodeviceselection', 'hangup', 'profile', 'chat', 'recording',
+    //    'livestreaming', 'etherpad', 'sharedvideo', 'shareaudio', 'settings', 'raisehand',
+    //    'videoquality', 'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
+    //    'tileview', 'select-background', 'download', 'help', 'mute-everyone', 'mute-video-everyone', 'security'
+    // ],
 
     // Stats
     //
@@ -430,6 +455,10 @@ var config = {
 
     // Enables sending participants' emails (if available) to callstats and other analytics
     // enableEmailInStats: false,
+
+    // Controls the percentage of automatic feedback shown to participants when callstats is enabled.
+    // The default value is 100%. If set to 0, no automatic feedback will be requested
+    // feedbackPercentage: 100,
 
     // Privacy
     //
@@ -469,7 +498,7 @@ var config = {
 
         // If set to true, it will prefer to use H.264 for P2P calls (if H.264
         // is supported). This setting is deprecated, use preferredCodec instead.
-        // preferH264: true
+        // preferH264: true,
 
         // Provides a way to set the video codec preference on the p2p connection. Acceptable
         // codec values are 'VP8', 'VP9' and 'H264'.
@@ -511,7 +540,7 @@ var config = {
         // The interval at which rtcstats will poll getStats, defaults to 1000ms.
         // If the value is set to 0 getStats won't be polled and the rtcstats client
         // will only send data related to RTCPeerConnection events.
-        // rtcstatsPolIInterval: 1000
+        // rtcstatsPolIInterval: 1000,
 
         // Array of script URLs to load as lib-jitsi-meet "analytics handlers".
         // scriptURLs: [
@@ -533,6 +562,10 @@ var config = {
 
     // Decides whether the start/stop recording audio notifications should play on record.
     // disableRecordAudioNotification: false,
+
+    // Disables the sounds that play when other participants join or leave the
+    // conference (if set to true, these sounds will not be played).
+    // disableJoinLeaveSounds: false,
 
     // Information for the chrome extension banner
     // chromeExtensionBanner: {
@@ -593,6 +626,10 @@ var config = {
     // the menu has option to flip the locally seen video for local presentations
     // disableLocalVideoFlip: false,
 
+    // A property used to unset the default flip state of the local video.
+    // When it is set to 'true', the local(self) video will not be mirrored anymore.
+    // doNotFlipLocalVideo: false,
+
     // Mainly privacy related settings
 
     // Disables all invite functions from the app (share, invite, dial out...etc)
@@ -640,6 +677,9 @@ var config = {
     */
     // dynamicBrandingUrl: '',
 
+    // Sets the background transparency level. '0' is fully transparent, '1' is opaque.
+    // backgroundAlpha: 1,
+
     // The URL of the moderated rooms microservice, if available. If it
     // is present, a link to the service will be rendered on the welcome page,
     // otherwise the app doesn't render it.
@@ -649,16 +689,21 @@ var config = {
     // disableTileView: true,
 
     // Hides the conference subject
-    // hideConferenceSubject: true
+    // hideConferenceSubject: true,
 
     // Hides the conference timer.
     // hideConferenceTimer: true,
 
     // Hides the participants stats
-    // hideParticipantsStats: true
+    // hideParticipantsStats: true,
 
     // Sets the conference subject
     // subject: 'Conference Subject',
+
+    // This property is related to the use case when jitsi-meet is used via the IFrame API. When the property is true
+    // jitsi-meet will use the local storage of the host page instead of its own. This option is useful if the browser
+    // is not persisting the local storage inside the iframe.
+    // useHostPageLocalStorage: true,
 
     // List of undocumented settings used in jitsi-meet
     /**
