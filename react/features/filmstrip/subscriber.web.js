@@ -1,8 +1,7 @@
 // @flow
 
-import Filmstrip from '../../../modules/UI/videolayout/Filmstrip';
-import VideoLayout from '../../../modules/UI/videolayout/VideoLayout';
 import { StateListenerRegistry, equals } from '../base/redux';
+import { clientResized } from '../base/responsive-ui';
 import { setFilmstripVisible } from '../filmstrip/actions';
 import { setOverflowDrawer } from '../toolbox/actions.web';
 import { getCurrentLayout, getTileViewGridDimensions, shouldDisplayTileView, LAYOUTS } from '../video-layout';
@@ -71,39 +70,16 @@ StateListenerRegistry.register(
         case LAYOUTS.HORIZONTAL_FILMSTRIP_VIEW:
             store.dispatch(setHorizontalViewDimensions(state['features/base/responsive-ui'].clientHeight));
             break;
-        case LAYOUTS.VERTICAL_FILMSTRIP_VIEW:
-            // Once the thumbnails are reactified this should be moved there too.
-            Filmstrip.resizeThumbnailsForVerticalView();
-            break;
         }
     });
 
 /**
- * Handles on stage participant updates.
- */
-StateListenerRegistry.register(
-    /* selector */ state => state['features/large-video'].participantId,
-    /* listener */ (participantId, store, oldParticipantId) => {
-        const newThumbnail = VideoLayout.getSmallVideo(participantId);
-        const oldThumbnail = VideoLayout.getSmallVideo(oldParticipantId);
-
-        if (newThumbnail) {
-            newThumbnail.updateView();
-        }
-
-        if (oldThumbnail) {
-            oldThumbnail.updateView();
-        }
-    }
-);
-
-/**
- * Listens for changes in the chat state to calculate the dimensions of the tile view grid and the tiles.
+ * Listens for changes in the chat state to recompute available width.
  */
 StateListenerRegistry.register(
     /* selector */ state => state['features/chat'].isOpen,
     /* listener */ (isChatOpen, store) => {
-        const state = store.getState();
+        const { innerWidth, innerHeight } = window;
 
         if (isChatOpen) {
             // $FlowFixMe
@@ -113,21 +89,7 @@ StateListenerRegistry.register(
             document.body.classList.remove('shift-right');
         }
 
-        if (shouldDisplayTileView(state)) {
-            const gridDimensions = getTileViewGridDimensions(state);
-            const { clientHeight, clientWidth } = state['features/base/responsive-ui'];
-
-            store.dispatch(
-                setTileViewDimensions(
-                    gridDimensions,
-                    {
-                        clientHeight,
-                        clientWidth
-                    },
-                    store
-                )
-            );
-        }
+        store.dispatch(clientResized(innerWidth, innerHeight));
     });
 
 /**
@@ -152,6 +114,7 @@ StateListenerRegistry.register(
  * Symbol mapping used for the tile view responsiveness computation.
  */
 const responsiveColumnMapping = {
+    multipleColumns: Symbol('multipleColumns'),
     singleColumn: Symbol('singleColumn'),
     twoColumns: Symbol('twoColumns'),
     twoParticipantsSingleColumn: Symbol('twoParticipantsSingleColumn')
@@ -173,14 +136,13 @@ StateListenerRegistry.register(
             // Forcing the recomputation of tiles when screen switches in or out of
             // the (ASPECT_RATIO_BREAKPOINT, SINGLE_COLUMN_BREAKPOINT] interval.
             return responsiveColumnMapping.twoParticipantsSingleColumn;
+        } else if (clientWidth < SINGLE_COLUMN_BREAKPOINT) {
+            // Forcing the recomputation of tiles when screen switches below SINGLE_COLUMN_BREAKPOINT.
+            return responsiveColumnMapping.singleColumn;
         }
 
-        /**
-         * This gets called either when the width of the screen is above {@code TWO_COLUMN_BREAKPOINT}
-         * or below {@CODE SINGLE_COLUMN_BREAKPOINT}, however, the internal logic from {@code getMaxColumnCount}
-         * only takes the second case into consideration.
-         */
-        return responsiveColumnMapping.singleColumn;
+        // Forcing the recomputation of tiles when screen switches above TWO_COLUMN_BREAKPOINT.
+        return responsiveColumnMapping.multipleColumns;
     },
     /* listener */ (_, store) => {
         const state = store.getState();

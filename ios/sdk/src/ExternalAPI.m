@@ -23,6 +23,10 @@ static NSString * const setAudioMutedAction = @"org.jitsi.meet.SET_AUDIO_MUTED";
 static NSString * const sendEndpointTextMessageAction = @"org.jitsi.meet.SEND_ENDPOINT_TEXT_MESSAGE";
 static NSString * const toggleScreenShareAction = @"org.jitsi.meet.TOGGLE_SCREEN_SHARE";
 static NSString * const retrieveParticipantsInfoAction = @"org.jitsi.meet.RETRIEVE_PARTICIPANTS_INFO";
+static NSString * const openChatAction = @"org.jitsi.meet.OPEN_CHAT";
+static NSString * const closeChatAction = @"org.jitsi.meet.CLOSE_CHAT";
+static NSString * const sendChatMessageAction = @"org.jitsi.meet.SEND_CHAT_MESSAGE";
+static NSString * const setVideoMutedAction = @"org.jitsi.meet.SET_VIDEO_MUTED";
 
 @implementation ExternalAPI
 
@@ -30,7 +34,7 @@ static NSMapTable<NSString*, void (^)(NSArray* participantsInfo)> *participantIn
 
 __attribute__((constructor))
 static void initializeViewsMap() {
-    participantInfoCompletionHandlers = [NSMapTable strongToWeakObjectsMapTable];
+    participantInfoCompletionHandlers = [NSMapTable strongToStrongObjectsMapTable];
 }
 
 RCT_EXPORT_MODULE();
@@ -41,7 +45,11 @@ RCT_EXPORT_MODULE();
         @"SET_AUDIO_MUTED" : setAudioMutedAction,
         @"SEND_ENDPOINT_TEXT_MESSAGE": sendEndpointTextMessageAction,
         @"TOGGLE_SCREEN_SHARE": toggleScreenShareAction,
-        @"RETRIEVE_PARTICIPANTS_INFO": retrieveParticipantsInfoAction
+        @"RETRIEVE_PARTICIPANTS_INFO": retrieveParticipantsInfoAction,
+        @"OPEN_CHAT": openChatAction,
+        @"CLOSE_CHAT": closeChatAction,
+        @"SEND_CHAT_MESSAGE": sendChatMessageAction,
+        @"SET_VIDEO_MUTED" : setVideoMutedAction
     };
 };
 
@@ -61,7 +69,12 @@ RCT_EXPORT_MODULE();
               setAudioMutedAction,
               sendEndpointTextMessageAction,
               toggleScreenShareAction,
-              retrieveParticipantsInfoAction];
+              retrieveParticipantsInfoAction,
+              openChatAction,
+              closeChatAction,
+              sendChatMessageAction,
+              setVideoMutedAction
+    ];
 }
 
 /**
@@ -143,11 +156,10 @@ RCT_EXPORT_METHOD(sendEvent:(NSString *)name
     [self sendEventWithName:setAudioMutedAction body:data];
 }
 
-- (void)sendEndpointTextMessage:(NSString*)to :(NSString*)message {
-    NSDictionary *data = @{
-        @"to": to,
-        @"message": message
-    };
+- (void)sendEndpointTextMessage:(NSString*)message :(NSString*)to {
+    NSMutableDictionary *data = [[NSMutableDictionary alloc] init];
+    data[@"to"] = to;
+    data[@"message"] = message;
     
     [self sendEventWithName:sendEndpointTextMessageAction body:data];
 }
@@ -160,8 +172,35 @@ RCT_EXPORT_METHOD(sendEvent:(NSString *)name
     NSString *completionHandlerId = [[NSUUID UUID] UUIDString];
     NSDictionary *data = @{ @"requestId": completionHandlerId};
     
-    [participantInfoCompletionHandlers setObject:completionHandler forKey:completionHandlerId];
+    [participantInfoCompletionHandlers setObject:[completionHandler copy] forKey:completionHandlerId];
     
     [self sendEventWithName:retrieveParticipantsInfoAction body:data];
 }
+
+- (void)openChat:(NSString*)to {
+    NSMutableDictionary *data = [[NSMutableDictionary alloc] init];
+    data[@"to"] = to;
+    
+    [self sendEventWithName:openChatAction body:data];
+}
+
+- (void)closeChat {
+    [self sendEventWithName:closeChatAction body:nil];
+}
+
+- (void)sendChatMessage:(NSString*)message :(NSString*)to {
+    NSMutableDictionary *data = [[NSMutableDictionary alloc] init];
+    data[@"to"] = to;
+    data[@"message"] = message;
+    
+    [self sendEventWithName:sendChatMessageAction body:data];
+}
+
+- (void)sendSetVideoMuted:(BOOL)muted {
+    NSDictionary *data = @{ @"muted": [NSNumber numberWithBool:muted]};
+
+    [self sendEventWithName:setVideoMutedAction body:data];
+}
+
+
 @end
